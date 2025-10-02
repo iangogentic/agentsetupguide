@@ -140,21 +140,9 @@ cd app
 
 ---
 
-
-- Create a Neon project and copy the connection string.
-- (Optional) Use a **preview DB branch per Git branch** for clean test data.
-- Add locally (`.env.local`) and later in Vercel env vars:
-```bash
-DATABASE_URL=postgres://<your-neon-connection-string>
-```
-
----
-
 ## Context Pack (the small docs Claude follows)
+Create these files at the repo root:
 
-**You can have Claude Code create these files for you** by giving it the prompt in [PRD → Tasks → Execute](#prd--tasks--execute-what-to-tell-claude-code), or create them manually:
-
-**File structure:**
 ```
 /docs
   PRD.md
@@ -200,10 +188,10 @@ Read /docs/PRD.md and /docs/tasks.yaml before any change.
 Work one task at a time; write missing tests first.
 After each task: run `npm run ci`, update task status, and commit:
   task(<id>): <title> — tests passing
-Propose PRD edits in /docs/PRD_CHANGE_PROPOSALS.md (don't change PRD inline).
+Propose PRD edits in /docs/PRD_CHANGE_PROPOSALS.md (don’t change PRD inline).
 ```
 
-**`.claude/settings.json` (allow only what's needed)**
+**`.claude/settings.json` (allow only what’s needed)**
 ```json
 {
   "permissions": {
@@ -231,6 +219,59 @@ Propose PRD edits in /docs/PRD_CHANGE_PROPOSALS.md (don't change PRD inline).
     "ci": "vitest || true && playwright test"
   }
 }
+```
+
+---
+
+## Connect MCPs (Playwright required; others optional)
+
+### Required — Playwright MCP (browser automation so Claude can self‑test)
+```bash
+claude mcp add playwright "npx @playwright/mcp@latest"
+```
+
+### Optional MCPs
+> Use the vendor’s package or a hosted **remote MCP** endpoint; examples below are placeholders—swap in the official commands/URLs you use.
+
+```bash
+# Neon MCP (Claude manages Neon DB branches, runs SQL)
+claude mcp add neon "npx -y @neondatabase/mcp-server-neon start ${NEON_API_KEY}"
+
+# Filesystem MCP (read/write within a safe project dir)
+claude mcp add filesystem "npx -y mcp-server-filesystem --root ./"
+
+# OmniSearch MCP (code/docs search & retrieval across your workspace)
+claude mcp add omnisearch "npx -y mcp-omnisearch"   # or: mcp-remote https://<omnisearch-endpoint>
+
+# Context7 MCP Server (context orchestration)
+claude mcp add context7 "npx -y mcp-context7"       # or: mcp-remote https://<context7-endpoint>
+
+# Apidog MCP Server (API definition & testing integration)
+claude mcp add apidog "npx -y mcp-apidog"           # or: mcp-remote https://<apidog-endpoint>
+
+# SequentialThinking Tools MCP (planning utilities)
+claude mcp add seqtools "npx -y sequentialthinking-tools-mcp"
+
+# SQLite MCP (quick local DB for prototypes)
+claude mcp add sqlite "npx -y mcp-sqlite --db ./data/app.sqlite"
+
+# Spec-Workflow MCP (specification workflow management)
+claude mcp add spec-workflow "npx -y mcp-spec-workflow"  # or: mcp-remote https://<spec-workflow-endpoint>
+```
+
+**Remote MCP pattern (if the vendor hosts it)**
+```bash
+claude mcp add <name> "npx -y mcp-remote https://<vendor-mcp-endpoint>"
+```
+
+---
+
+## Neon Database
+- Create a Neon project and copy the connection string.
+- (Optional) Use a **preview DB branch per Git branch** for clean test data.
+- Add locally (`.env.local`) and later in Vercel env vars:
+```bash
+DATABASE_URL=postgres://<your-neon-connection-string>
 ```
 
 ---
