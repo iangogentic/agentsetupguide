@@ -3,6 +3,45 @@
 > **Plain-English guide** to build something useful fast by talking to ChatGPT, writing a one‑page PRD, and letting Claude Code execute: create tasks, test as it goes (Playwright MCP), and deploy to Vercel. Keep it tiny. Ship the happy path first.
 
 ---
+## Quick Start
+
+Copy/paste the commands for your OS to get everything installed:
+
+### Windows (PowerShell)
+```powershell
+winget install -e --id OpenJS.NodeJS.LTS
+winget install -e --id Git.Git
+winget install -e --id Python.Python.3.12
+winget install -e --id GitHub.cli
+npm i -g playwright && npx playwright install
+npm i -g @anthropic-ai/claude-code
+claude login
+claude mcp add playwright "npx @playwright/mcp@latest"
+```
+
+### macOS (Terminal)
+```bash
+brew install node@20 git python gh
+npm i -g playwright && npx playwright install
+npm i -g @anthropic-ai/claude-code
+claude login
+claude mcp add playwright "npx @playwright/mcp@latest"
+```
+
+### Ubuntu/Debian
+```bash
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs git python3 python3-pip
+npm i -g playwright && npx playwright install --with-deps
+npm i -g @anthropic-ai/claude-code
+claude login
+claude mcp add playwright "npx @playwright/mcp@latest"
+```
+
+**Done.** Now jump to [PRD → Tasks → Execute](#prd--tasks--execute-what-to-tell-claude-code) to start building.
+
+---
+
 
 ## Outcome (At a Glance)
 **ChatGPT (think) → PRD → Claude Code (do) → Tasks + Tests → GitHub → Vercel (Preview → Prod).**
@@ -20,9 +59,9 @@ You’ll:
 1. [Install & Verify](#install--verify)
 2. [Claude Code CLI](#claude-code-cli)
 3. [Create or Choose Your App Starter](#create-or-choose-your-app-starter)
-4. [Context Pack (the small docs Claude follows)](#context-pack-the-small-docs-claude-follows)
-5. [Connect MCPs (Playwright required; others optional)](#connect-mcps-playwright-required-others-optional)
-6. [Neon Database](#neon-database)
+4. [Connect MCPs (Playwright required; others optional)](#connect-mcps-playwright-required-others-optional)
+5. [Neon Database](#neon-database)
+6. [Context Pack (the small docs Claude follows)](#context-pack-the-small-docs-claude-follows)
 7. [PRD → Tasks → Execute (what to tell Claude Code)](#prd--tasks--execute-what-to-tell-claude-code)
 8. [GitHub + Vercel CLI (push, envs, fix deploys)](#github--vercel-cli-push-envs-fix-deploys)
 9. [Deploy & Self‑Test](#deploy--selftest)
@@ -140,7 +179,50 @@ cd app
 
 ---
 
+## Connect MCPs (Playwright required; others optional)
 
+### Required — Playwright MCP (browser automation so Claude can self‑test)
+```bash
+claude mcp add playwright "npx @playwright/mcp@latest"
+```
+
+### Optional MCPs
+> Use the vendor’s package or a hosted **remote MCP** endpoint; examples below are placeholders—swap in the official commands/URLs you use.
+
+```bash
+# Neon MCP (Claude manages Neon DB branches, runs SQL)
+claude mcp add neon "npx -y @neondatabase/mcp-server-neon start ${NEON_API_KEY}"
+
+# Filesystem MCP (read/write within a safe project dir)
+claude mcp add filesystem "npx -y mcp-server-filesystem --root ./"
+
+# OmniSearch MCP (code/docs search & retrieval across your workspace)
+claude mcp add omnisearch "npx -y mcp-omnisearch"   # or: mcp-remote https://<omnisearch-endpoint>
+
+# Context7 MCP Server (context orchestration)
+claude mcp add context7 "npx -y mcp-context7"       # or: mcp-remote https://<context7-endpoint>
+
+# Apidog MCP Server (API definition & testing integration)
+claude mcp add apidog "npx -y mcp-apidog"           # or: mcp-remote https://<apidog-endpoint>
+
+# SequentialThinking Tools MCP (planning utilities)
+claude mcp add seqtools "npx -y sequentialthinking-tools-mcp"
+
+# SQLite MCP (quick local DB for prototypes)
+claude mcp add sqlite "npx -y mcp-sqlite --db ./data/app.sqlite"
+
+# Spec-Workflow MCP (specification workflow management)
+claude mcp add spec-workflow "npx -y mcp-spec-workflow"  # or: mcp-remote https://<spec-workflow-endpoint>
+```
+
+**Remote MCP pattern (if the vendor hosts it)**
+```bash
+claude mcp add <name> "npx -y mcp-remote https://<vendor-mcp-endpoint>"
+```
+
+---
+
+## Neon Database
 - Create a Neon project and copy the connection string.
 - (Optional) Use a **preview DB branch per Git branch** for clean test data.
 - Add locally (`.env.local`) and later in Vercel env vars:
@@ -151,10 +233,10 @@ DATABASE_URL=postgres://<your-neon-connection-string>
 ---
 
 ## Context Pack (the small docs Claude follows)
-
 **You can have Claude Code create these files for you** by giving it the prompt in [PRD → Tasks → Execute](#prd--tasks--execute-what-to-tell-claude-code), or create them manually:
 
 **File structure:**
+
 ```
 /docs
   PRD.md
@@ -200,10 +282,10 @@ Read /docs/PRD.md and /docs/tasks.yaml before any change.
 Work one task at a time; write missing tests first.
 After each task: run `npm run ci`, update task status, and commit:
   task(<id>): <title> — tests passing
-Propose PRD edits in /docs/PRD_CHANGE_PROPOSALS.md (don't change PRD inline).
+Propose PRD edits in /docs/PRD_CHANGE_PROPOSALS.md (don’t change PRD inline).
 ```
 
-**`.claude/settings.json` (allow only what's needed)**
+**`.claude/settings.json` (allow only what’s needed)**
 ```json
 {
   "permissions": {
@@ -232,6 +314,9 @@ Propose PRD edits in /docs/PRD_CHANGE_PROPOSALS.md (don't change PRD inline).
   }
 }
 ```
+
+---
+
 
 ---
 
